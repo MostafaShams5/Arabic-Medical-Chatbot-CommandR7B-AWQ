@@ -8,6 +8,14 @@ from qdrant_client.http import models as qdrant_models
 from FlagEmbedding import BGEM3FlagModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
+import transformers.utils.import_utils
+
+def is_torch_fx_available():
+    """Deprecated: kept for backwards compatibility with trust_remote_code models."""
+    return True
+
+# Inject the mocked function back into the library before the model loads it
+transformers.utils.import_utils.is_torch_fx_available = is_torch_fx_available
 
 print("Loading BGE-M3 Embedding Model...")
 # BGE-M3 handles both semantic (dense) and keyword (sparse) search
