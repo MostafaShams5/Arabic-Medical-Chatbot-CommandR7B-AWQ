@@ -37,6 +37,18 @@ embedding_model = BGEM3FlagModel('BAAI/bge-m3', use_fp16=True)
 print("Connecting to Qdrant Database...")
 # Points to the database folder that will be mounted inside our Docker container
 DB_PATH = os.getenv("QDRANT_PATH", "./medical_qdrant_db")
+if os.path.exists(DB_PATH):
+    for root, dirs, files in os.walk(DB_PATH):
+        for file in files:
+            if file == ".lock":
+                lock_path = os.path.join(root, file)
+                try:
+                    os.remove(lock_path)
+                    print(f"🔓 Removed stale lock file: {lock_path}")
+                except Exception as e:
+                    print(f"⚠️ Could not remove lock: {e}")
+# =========================================================
+
 client = QdrantClient(path=DB_PATH)
 COLLECTION_NAME = "arabic_medical_HybridRAG"
 
@@ -178,9 +190,8 @@ async def chat_endpoint(request: ChatRequest):
         print(f"Server Error: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal Server Error during AI processing.")
 
-# =========================================================
-# 5. SERVER EXECUTION
-# =========================================================
+
 if __name__ == "__main__":
-    # Runs the server on port 8000, listening to all incoming IP addresses
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=False)
+    # IMPORTANT: Do NOT put quotes around 'app'. 
+    # Passing the variable directly stops Uvicorn from double-booting.
+    uvicorn.run(app, host="0.0.0.0", port=8000, reload=False)
