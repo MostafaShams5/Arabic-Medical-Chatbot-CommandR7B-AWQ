@@ -1,13 +1,17 @@
-import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+import transformers
+import transformers.utils
+import transformers.utils.import_utils
 
+# 2. Define the patch
 def is_torch_fx_available():
     """Deprecated: kept for backwards compatibility with trust_remote_code models."""
     return True
 
-# 3. Force-inject the function directly into the module's core memory
+# 3. Inject it into the module
 transformers.utils.import_utils.is_torch_fx_available = is_torch_fx_available
 transformers.utils.is_torch_fx_available = is_torch_fx_available
+import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
 import os
 import uvicorn
 from fastapi import FastAPI, HTTPException
